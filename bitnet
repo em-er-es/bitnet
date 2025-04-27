@@ -46,6 +46,18 @@ podman-check(){
 	done && echo All checks passed
 }
 
+podman-run(){
+	podman-run-1
+}
+
+podman-run-0(){
+	podman run --rm -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
+}
+
+podman-run-1(){
+	podman --root /tmp/podman/root --imagestore /tmp/podman/store run --rm -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
+}
+
 podman-server(){
 	podman-server-0
 }
@@ -103,6 +115,10 @@ build(){ #Build image
 
 check(){ #Check services connectivity
 	${VIRTUALIZATION}-check
+}
+
+run(){ #Run container with a prompt
+	${VIRTUALIZATION}-run
 }
 
 server(){ #Run container server
