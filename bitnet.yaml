@@ -1,0 +1,23 @@
+version: '3.6'
+services:
+	bitnet-server:
+		image: localhost/bitnet
+		container_name: bitnet-server
+		# restart: always
+		# hostname: 'bitnet-box'
+		environment:
+		ports:
+			- 11434:11434
+		volumes:
+			- ./bitnet.history:/tmp/bash.history
+			- ./configuration:/application/configuration
+			- ./tmp/bitnet:/io
+			- ./logs:/var/logs
+			- ./data:/application/data
+		shm_size: '512m'
+		entrypoint:
+			- /bin/bash
+			- -c
+		command:
+			- echo
+			- Container
