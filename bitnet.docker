@@ -64,5 +64,3 @@ ENTRYPOINT ["/bin/bash"]
 
 COPY --from=building /source/bitnet-git /application/
 COPY --from=building /home/container/miniconda3 /home/container/miniconda3/
-# ENTRYPOINT ["/bin/bash", "-c", "${HOME}/miniconda3/bin/activate", "&&", "conda activate venv-bitnet", "&&", "python", "run_inference.py", "-m", "models/bitnet_b1_58-large/ggml-model-i2_s.gguf", "-t", "20", "-n", "1024", "-p"]
-# CMD ["You are a helpful AI agent. Tell about yourself."]
