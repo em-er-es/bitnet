@@ -34,12 +34,10 @@ WORKDIR "/source"
 ENTRYPOINT ["/bin/bash"]
 
 ## Miniconda
-# RUN curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash # Doesn't work, likely gets sourced instead of running as per bash call
 RUN curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/install-miniconda.sh && bash /tmp/install-miniconda.sh -b
 
 # Get sources
 RUN if [ ${SOURCE_MODE} -gt 0 ]; then git clone --recursive https://github.com/microsoft/BitNet.git bitnet-git && cd bitnet-git && git checkout ${COMMIT_A}; fi
-# && git submodule update --init --recursive; fi
 WORKDIR "/source/bitnet-git"
  
 # Configure, compile and install
