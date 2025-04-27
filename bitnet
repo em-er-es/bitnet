@@ -55,7 +55,7 @@ podman-run-0(){
 }
 
 podman-run-1(){
-	podman --root /tmp/podman/root --imagestore /tmp/podman/store run --rm -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
+	podman --root /tmp/podman/root --imagestore /tmp/podman/store run --rm -v ./bitnet.history:/tmp/bash.history:ro -e HISTFILE=/tmp/bash.history -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
 }
 
 podman-server(){
