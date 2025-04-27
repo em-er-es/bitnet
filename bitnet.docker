@@ -19,7 +19,6 @@ git \
 lsb-release \
 software-properties-common \
 && rm -rf /var/lib/apt/lists/*
-# build-essential \
 
 ## LLVM
 RUN curl -LsSf https://apt.llvm.org/llvm.sh | bash
