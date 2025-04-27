@@ -46,7 +46,5 @@ RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 
 	huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large && \
 	CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s && \
 	rm models/bitnet_b1_58-large/ggml-model-f32.gguf
-ENTRYPOINT ["/bin/bash", "-c", "${HOME}/miniconda3/bin/activate", "&&", "conda activate venv-bitnet", "&&", "python", "run_inference.py", "-m", "models/bitnet_b1_58-large/ggml-model-i2_s.gguf", "-t", "20", "-n", "1024", "-p"]
-CMD ["You are a helpful AI agent. Tell about yourself."]
 
 ## Runtime
