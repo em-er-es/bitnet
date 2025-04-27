@@ -1,0 +1,57 @@
+## Building
+FROM ubuntu:24.04 as building
+ARG SOURCE_MODE=${SOURCE_MODE:-1}
+ARG COMMIT_A=${COMMIT_A:-c17d1c5}
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TERM=linux
+ENV TZ=Europe/Luxembourg
+
+# Setup timezone and user
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && export uid=1000 gid=1000 && mkdir -p /home/container && echo "container:x:${uid}:${gid}:container,,,:/home/container:/bin/bash" >> /etc/passwd && echo "container:x:${uid}:" >> /etc/group && mkdir /etc/sudoers.d && echo "container ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/container && chmod 0440 /etc/sudoers.d/container && chown ${uid}:${gid} -R /home/container
+ENV HOME="/home/container"
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+cmake \
+curl \
+g++ \
+git \
+lsb-release \
+software-properties-common \
+&& rm -rf /var/lib/apt/lists/*
+# build-essential \
+
+## LLVM
+RUN curl -LsSf https://apt.llvm.org/llvm.sh | bash
+
+## UV
+# Doesn't solve dependencies for numpy
+# COPY --from=ghcr.io/astral-sh/uv:0.6.17 /uv /uvx /bin/
+
+# Run settings
+USER container
+WORKDIR "/source"
+ENTRYPOINT ["/bin/bash"]
+
+## Miniconda
+# RUN curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash # Doesn't work, likely gets sourced instead of running as per bash call
+RUN curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/install-miniconda.sh && bash /tmp/install-miniconda.sh -b
+
+# Get sources
+RUN if [ ${SOURCE_MODE} -gt 0 ]; then git clone --recursive https://github.com/microsoft/BitNet.git bitnet-git && cd bitnet-git && git checkout ${COMMIT_A}; fi
+# && git submodule update --init --recursive; fi
+WORKDIR "/source/bitnet-git"
+ 
+# Configure, compile and install
+# RUN uv venv venv-bitnet && . venv-bitnet/bin/activate && uv python install 3.9 && uv pip install -r requirements.txt
+RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && pip install -r requirements.txt && env > /source/bitnet.env
+ENV $(. /source/bitnet.env)
+RUN huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large
+# RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s
+# RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && python setup_env.py -md models/bitnet_b1_58-large -q i2_s
+RUN python setup_env.py -md models/bitnet_b1_58-large -q i2_s
+# RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && pip install -r requirements.txt && huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large && CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s # This seems to run out of space
+ENTRYPOINT ["python", "run_inteference.py", "-m", "models/bitnet_b1_58-large/ggml-model-i2_s.gguf", "-t", "20", "-n", "1024", "-p"]
+CMD ["You are a helpful AI agent. Tell about yourself."]
+
+## Runtime
