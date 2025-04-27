@@ -24,10 +24,6 @@ software-properties-common \
 ## LLVM
 RUN curl -LsSf https://apt.llvm.org/llvm.sh | bash
 
-## UV
-# Doesn't solve dependencies for numpy
-# COPY --from=ghcr.io/astral-sh/uv:0.6.17 /uv /uvx /bin/
-
 # Run settings
 USER container
 WORKDIR "/source"
