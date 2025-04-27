@@ -48,3 +48,21 @@ RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 
 	rm models/bitnet_b1_58-large/ggml-model-f32.gguf
 
 ## Runtime
+FROM ubuntu:24.04 as runtime
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TERM=linux
+ENV TZ=Europe/Luxembourg
+
+# Setup timezone and user
+RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone && export uid=1000 gid=1000 && mkdir -p /home/container && echo "container:x:${uid}:${gid}:container,,,:/home/container:/bin/bash" >> /etc/passwd && echo "container:x:${uid}:" >> /etc/group && mkdir /etc/sudoers.d && echo "container ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/container && chmod 0440 /etc/sudoers.d/container && chown ${uid}:${gid} -R /home/container
+ENV HOME="/home/container"
+
+# Run settings
+USER container
+WORKDIR "/application"
+ENTRYPOINT ["/bin/bash"]
+
+COPY --from=building /source/bitnet-git /application/
+COPY --from=building /home/container/miniconda3 /home/container/miniconda3/
+# ENTRYPOINT ["/bin/bash", "-c", "${HOME}/miniconda3/bin/activate", "&&", "conda activate venv-bitnet", "&&", "python", "run_inference.py", "-m", "models/bitnet_b1_58-large/ggml-model-i2_s.gguf", "-t", "20", "-n", "1024", "-p"]
+# CMD ["You are a helpful AI agent. Tell about yourself."]
