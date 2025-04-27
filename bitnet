@@ -1,0 +1,125 @@
+#!/usr/bin/env -S bash
+## @file
+# @author Ernest Skrzypczyk
+# @date 2025.04.17
+# @comment
+
+##
+# @todo 
+#
+
+YAML=${YAML:-bitnet}
+PODMAN_COMPOSE="${PODMAN_COMPOSE:-${HOME}/Workspaces/podman-compose/bin/activate}"
+POD=${POD:-bitnet-local}
+VIRTUALIZATION=${VIRTUALIZATION:-podman}
+
+init() {
+	# Load secrets into environment
+	local SECRETS="${0##*/}.secrets"
+	[ -f "${SECRETS}" ] && source "${SECRETS}"
+}
+
+podman-compose-check(){
+	command -v podman-compose &>/dev/null && return
+	[[ "${VIRTUAL_ENV_PROMPT}" != "(podman-compose)" ]] && source "${PODMAN_COMPOSE}"
+}
+
+podman-build(){
+	podman-build-1
+}
+
+podman-build-0(){
+	podman build -t "${YAML}" -f "${YAML}.docker" .
+}
+
+podman-build-1(){ ## Build in /tmp
+	mkdir -p /tmp/podman/{root,store,var}
+	export TMPDIR=/tmp/podman/var
+	podman --root /tmp/podman/root --imagestore /tmp/podman/store build -t "${YAML}" -f "${YAML}.docker" .
+}
+
+podman-check(){
+	local ADDRESSES=(container-server container-database)
+	local PORTS=(2000 3000)
+	for I in ${!ADDRESSES[@]}; do
+		podman exec -it container-server /usr/bin/curl ${ADDRESSES[${I}]}:${PORTS[${I}]} >/dev/null && echo Service ${ADDRESSES[${I}]} reachable
+	done && echo All checks passed
+}
+
+podman-server(){
+	podman-server-0
+}
+
+podman-server-0(){
+	shift
+	podman-compose-check
+	podman-compose -f "${YAML}.yaml" up
+	podman-compose -f "${YAML}.yaml" down
+}
+
+podman-server-1(){
+	podman pod exists ${POD} || podman pod create -p 1234:2000 -p 1235:3000 ${POD}
+	podman run -d --pod=container-local -e POSTGRES_DB=${SECRET_DB_NAME} -e POSTGRES_USER=${SECRET_DB_USER} -e POSTGRES_PASSWORD=${SECRET_DB_PW} --restart=always -v database:/var/lib/postgresql/data --name=container-database --replace -it postgres:15-alpine
+	podman run -d --pod=container-local -e DB_TYPE=postgres -e DB_HOST=container-database -e DB_PORT=5432 -e DB_NAME=${SECRET_WK_NAME} -e DB_USER=${SECRET_WK_USER} -e DB_PASS=${SECRET_WK_PW} --restart=unless-stopped -v ./assets:/wiki/assets -v ./content:/wiki/data/content --name=container-server --replace -it ghcr.io/requarks/wiki:2.5
+	podman wait --latest
+	podman pod stop ${POD}
+	podman pod rm ${POD}
+}
+
+podman-server-2(){
+	shift
+	podman kube play "${YAML}.k8s.yaml"
+	podman wait --latest
+	podman kube down "${YAML}.k8s.yaml"
+}
+
+podman-shell(){
+	shift
+	podman exec -it container-server /bin/bash "${@}"
+}
+
+docker-check(){
+	local ADDRESSES=(container database)
+	local PORTS=(2000 3000)
+	for I in ${!ADDRESSES[@]}; do
+		sudo docker exec -it container-server /usr/bin/curl ${ADDRESSES[${I}]}:${PORTS[${I}]} >/dev/null && echo Service ${ADDRESSES[${I}]} reachable
+	done && echo All checks passed
+}
+
+docker-server(){
+	shift
+	sudo docker compose -f "${YAML}.yaml" up
+	sudo docker compose -f "${YAML}.yaml" down
+}
+
+docker-shell(){
+	shift
+	sudo docker exec -it container-server /bin/bash "${@}"
+}
+
+build(){ #Build image
+	${VIRTUALIZATION}-build
+}
+
+check(){ #Check services connectivity
+	${VIRTUALIZATION}-check
+}
+
+server(){ #Run container server
+	${VIRTUALIZATION}-server
+}
+
+shell(){ #Run shell inside container
+	${VIRTUALIZATION}-shell
+}
+
+usage(){ #Show this information
+	echo -e "Usage ${0##*/}: $(grep -Eo '(^[[:alnum:]_-]{1,})\(\)\{' ${0} | grep -Ev -e '-[0-9]*\(' -e '^podman-|^docker-' | tr -d '(){' | tr '\n' '|' | sed 's/|*$//')
+$(grep -Eo '(^[[:alnum:]_-]{1,})\(\)\{ #.*' ${0} | sed 's/(){ #/: /' | while read ENTRY; do echo -e "\t${ENTRY}"; done)"
+}
+
+CMD=${1:-usage}
+
+[ "${CMD##*/}" != "usage" ] && init
+
+${CMD##*/} ${@}
