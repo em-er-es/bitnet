@@ -1,0 +1,2 @@
+. ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet
+python run_inference.py -m models/bitnet_b1_58-large/ggml-model-i2_s.gguf -p "You are a helpful assistant"
