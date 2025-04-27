@@ -37,19 +37,11 @@ RUN if [ ${SOURCE_MODE} -gt 0 ]; then git clone --recursive https://github.com/m
 WORKDIR "/source/bitnet-git"
  
 # Configure, compile and install
-# RUN uv venv venv-bitnet && . venv-bitnet/bin/activate && uv python install 3.9 && uv pip install -r requirements.txt
-##
-# RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && pip install -r requirements.txt && huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large && CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s # This seems to run out of space
-##
-RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && pip install -r requirements.txt
-RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large
-RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s && rm models/bitnet_b1_58-large/ggml-model-f32.gguf
-# RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && python setup_env.py -md models/bitnet_b1_58-large -q i2_s
-# RUN python setup_env.py -md models/bitnet_b1_58-large -q i2_s
-# RUN . ${HOME}/miniconda3/bin/activate && conda activate venv-bitnet && env > /source/bitnet.env
-# ENV $(. /source/bitnet.env)
+RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && pip install -r requirements.txt && \
+	huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large && \
+	CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s && rm models/bitnet_b1_58-large/ggml-model-f32.gguf && \
+	rm models/bitnet_b1_58-large/ggml-model-f32.gguf
 ENTRYPOINT ["/bin/bash", "-c", "${HOME}/miniconda3/bin/activate", "&&", "conda activate venv-bitnet", "&&", "python", "run_inference.py", "-m", "models/bitnet_b1_58-large/ggml-model-i2_s.gguf", "-t", "20", "-n", "1024", "-p"]
-# ENTRYPOINT ["/usr/bin/touch"]
 CMD ["You are a helpful AI agent. Tell about yourself."]
 
 ## Runtime
