@@ -44,7 +44,7 @@ WORKDIR "/source/bitnet-git"
 RUN . ${HOME}/miniconda3/bin/activate && conda create -n venv-bitnet python=3.9 && conda activate venv-bitnet && \
 	pip install -r requirements.txt && \
 	huggingface-cli download 1bitLLM/bitnet_b1_58-large --local-dir models/bitnet_b1_58-large && \
-	CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s && \
+	CMAKE_ARGS="-DCMAKE_INSTALL_PREFIX=/source/bitnet-git -DLLAMA_HIPBLAS=on -DLLAMA_CLBLAST=on -DCMAKE_C_COMPILER=/usr/lib/llvm-19/bin/clang -DCMAKE_CXX_COMPILER=/usr/lib/llvm-19/bin/clang++" FORCE_CMAKE=1 python setup_env.py -md models/bitnet_b1_58-large -q i2_s && \
 	rm models/bitnet_b1_58-large/ggml-model-f32.gguf
 
 ## Runtime
