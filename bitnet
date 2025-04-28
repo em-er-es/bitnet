@@ -47,7 +47,7 @@ podman-check(){
 }
 
 podman-run(){
-	podman-run-1
+	podman-run-0
 }
 
 podman-run-0(){
