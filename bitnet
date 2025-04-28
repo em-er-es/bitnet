@@ -39,11 +39,6 @@ podman-build-1(){ ## Build in /tmp
 }
 
 podman-check(){
-	local ADDRESSES=(container-server container-database)
-	local PORTS=(2000 3000)
-	for I in ${!ADDRESSES[@]}; do
-		podman exec -it container-server /usr/bin/curl ${ADDRESSES[${I}]}:${PORTS[${I}]} >/dev/null && echo Service ${ADDRESSES[${I}]} reachable
-	done && echo All checks passed
 }
 
 podman-run(){
@@ -70,19 +65,9 @@ podman-server-0(){
 }
 
 podman-server-1(){
-	podman pod exists ${POD} || podman pod create -p 1234:2000 -p 1235:3000 ${POD}
-	podman run -d --pod=container-local -e POSTGRES_DB=${SECRET_DB_NAME} -e POSTGRES_USER=${SECRET_DB_USER} -e POSTGRES_PASSWORD=${SECRET_DB_PW} --restart=always -v database:/var/lib/postgresql/data --name=container-database --replace -it postgres:15-alpine
-	podman run -d --pod=container-local -e DB_TYPE=postgres -e DB_HOST=container-database -e DB_PORT=5432 -e DB_NAME=${SECRET_WK_NAME} -e DB_USER=${SECRET_WK_USER} -e DB_PASS=${SECRET_WK_PW} --restart=unless-stopped -v ./assets:/wiki/assets -v ./content:/wiki/data/content --name=container-server --replace -it ghcr.io/requarks/wiki:2.5
-	podman wait --latest
-	podman pod stop ${POD}
-	podman pod rm ${POD}
 }
 
 podman-server-2(){
-	shift
-	podman kube play "${YAML}.k8s.yaml"
-	podman wait --latest
-	podman kube down "${YAML}.k8s.yaml"
 }
 
 podman-shell(){
@@ -91,17 +76,9 @@ podman-shell(){
 }
 
 docker-check(){
-	local ADDRESSES=(container database)
-	local PORTS=(2000 3000)
-	for I in ${!ADDRESSES[@]}; do
-		sudo docker exec -it container-server /usr/bin/curl ${ADDRESSES[${I}]}:${PORTS[${I}]} >/dev/null && echo Service ${ADDRESSES[${I}]} reachable
-	done && echo All checks passed
 }
 
 docker-server(){
-	shift
-	sudo docker compose -f "${YAML}.yaml" up
-	sudo docker compose -f "${YAML}.yaml" down
 }
 
 docker-shell(){
