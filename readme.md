@@ -12,6 +12,12 @@ Build image.
 $ ./bitnet build
 ```
 
+Build image using docker specifically.
+
+```bash
+$ VIRTUALIZATION=docker ./bitnet build
+```
+
 Run shell inside image.
 
 ```bash
