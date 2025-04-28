@@ -25,7 +25,7 @@ podman-compose-check(){
 }
 
 podman-build(){
-	podman-build-1
+	podman-build-0
 }
 
 podman-build-0(){
