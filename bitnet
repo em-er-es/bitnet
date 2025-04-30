@@ -39,6 +39,7 @@ podman-build-1(){ ## Build in /tmp
 }
 
 podman-check(){
+	echo
 }
 
 podman-run(){
@@ -65,9 +66,11 @@ podman-server-0(){
 }
 
 podman-server-1(){
+	echo
 }
 
 podman-server-2(){
+	echo
 }
 
 podman-shell(){
@@ -76,9 +79,11 @@ podman-shell(){
 }
 
 docker-check(){
+	echo
 }
 
 docker-server(){
+	echo
 }
 
 docker-shell(){
