@@ -4,7 +4,7 @@
 
 ### Virtualization
 
-Relies on podman by default, docker should work in the same manner. Current setup uses temporary storage in tmpfs/tmp.
+Relies on podman by default, docker should work in the same manner.
 
 Build image.
 
