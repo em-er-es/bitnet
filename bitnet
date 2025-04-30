@@ -13,13 +13,14 @@ PODMAN_COMPOSE="${PODMAN_COMPOSE:-${HOME}/Workspaces/podman-compose/bin/activate
 POD=${POD:-bitnet-local}
 VIRTUALIZATION=${VIRTUALIZATION:-podman}
 
-init() {
+init(){
 	# Load secrets into environment
 	local SECRETS="${0##*/}.secrets"
 	[ -f "${SECRETS}" ] && source "${SECRETS}"
 }
 
 podman-compose-check(){
+	# Check whether podman compose 3rd party component is available
 	command -v podman-compose &>/dev/null && return
 	[[ "${VIRTUAL_ENV_PROMPT}" != "(podman-compose)" ]] && source "${PODMAN_COMPOSE}"
 }
@@ -29,10 +30,12 @@ podman-build(){
 }
 
 podman-build-0(){
+	# Regular build
 	podman build -t "${YAML}" -f "${YAML}.docker" .
 }
 
-podman-build-1(){ ## Build in /tmp
+podman-build-1(){
+	# Build image in /tmp
 	mkdir -p /tmp/podman/{root,store,var}
 	export TMPDIR=/tmp/podman/var
 	podman --root /tmp/podman/root --imagestore /tmp/podman/store build -t "${YAML}" -f "${YAML}.docker" .
@@ -47,11 +50,13 @@ podman-run(){
 }
 
 podman-run-0(){
-	podman run --rm -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
+	# Run local image
+	podman run --rm -v ./bitnet.history:/tmp/bash.history:ro -e HISTFILE=/tmp/bash.history -v /tmp/bitnet:/io -it "localhost/${YAML}" "${@}"
 }
 
 podman-run-1(){
-	podman --root /tmp/podman/root --imagestore /tmp/podman/store run --rm -v ./bitnet.history:/tmp/bash.history:ro -e HISTFILE=/tmp/bash.history -v /tmp/bitnet:/io -it localhost/bitnet "${@}"
+	# Run local image in /tmp
+	podman --root /tmp/podman/root --imagestore /tmp/podman/store run --rm -v ./bitnet.history:/tmp/bash.history:ro -e HISTFILE=/tmp/bash.history -v /tmp/bitnet:/io -it "localhost/${YAML}" "${@}"
 }
 
 podman-server(){
@@ -65,17 +70,9 @@ podman-server-0(){
 	podman-compose -f "${YAML}.yaml" down
 }
 
-podman-server-1(){
-	echo
-}
-
-podman-server-2(){
-	echo
-}
-
 podman-shell(){
 	shift
-	podman exec -it container-server /bin/bash "${@}"
+	podman exec -it "${YAML}" /bin/bash "${@}"
 }
 
 docker-check(){
@@ -88,8 +85,10 @@ docker-server(){
 
 docker-shell(){
 	shift
-	sudo docker exec -it container-server /bin/bash "${@}"
+	sudo docker exec -it "${YAML}" /bin/bash "${@}"
 }
+
+# Meta functions
 
 build(){ #Build image
 	${VIRTUALIZATION}-build
