@@ -22,14 +22,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y podman
 
-    - name: Build with Docker using executable
-      run: VIRTUALIZATION=docker ./bitnet build
+    - name: Build with Docker
+      run: VIRTUALIZATION=docker ./bitnet build && docker build --file bitnet.docker --tag bitnet:$(printf '%s.%s\n' "$(git rev-list --count "${1-HEAD}")" "$(git rev-parse --short "${1-HEAD}")") .
 
-    - name: Build directly with Docker
-      run: docker build --file bitnet.docker --tag bitnet:$(printf '%s.%s\n' "$(git rev-list --count "${1-HEAD}")" "$(git rev-parse --short "${1-HEAD}")") .
-
-    - name: Build with Podman using executable
-      run: VIRTUALIZATION=podman ./bitnet build
-                
-    - name: Build directly with Podman
-      run: podman build --file bitnet.docker --tag bitnet:$(printf '%s.%s\n' "$(git rev-list --count "${1-HEAD}")" "$(git rev-parse --short "${1-HEAD}")") .
+    - name: Build with Podman
+      run: VIRTUALIZATION=podman ./bitnet build && podman build --file bitnet.docker --tag bitnet:$(printf '%s.%s\n' "$(git rev-list --count "${1-HEAD}")" "$(git rev-parse --short "${1-HEAD}")") .
