@@ -75,6 +75,10 @@ podman-shell(){
 	podman exec -it "${YAML}" /bin/bash "${@}"
 }
 
+docker-build(){
+	docker build -t "${YAML}" -f "${YAML}.docker" .
+}
+
 docker-check(){
 	echo
 }
