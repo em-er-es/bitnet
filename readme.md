@@ -1,10 +1,8 @@
-# SpAIder
-
-## Bitnet
+# Bitnet
 
 Provides virtualization OCI image for [Microsoft's Bitnet (bitnet.cpp)](https://github.com/microsoft/BitNet) inference framework for 1-bit LLMs.
 
-### Virtualization
+## Virtualization
 
 Relies on podman by default, docker should work in the same manner.
 
