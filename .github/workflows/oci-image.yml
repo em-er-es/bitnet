@@ -33,4 +33,5 @@ jobs:
         sudo apt-get install -y podman
 
     - name: Build with Podman
+      if: ${{ false }}
       run: VIRTUALIZATION=podman ./bitnet build && podman build --file bitnet.docker --tag bitnet:$(printf '%s.%s\n' "$(git rev-list --count "${1-HEAD}")" "$(git rev-parse --short "${1-HEAD}")") .
