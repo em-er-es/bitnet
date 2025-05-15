@@ -9,7 +9,7 @@
 #
 
 YAML=${YAML:-bitnet}
-PODMAN_COMPOSE="${PODMAN_COMPOSE:-${HOME}/Workspaces/podman-compose/bin/activate}"
+PODMAN_COMPOSE_PROVIDER=podman-compose
 POD=${POD:-bitnet-local}
 [ -f "${0}.virt" ] && source "${0}.virt"
 VIRTUALIZATION=${VIRTUALIZATION:-podman}
@@ -18,12 +18,6 @@ init(){
 	# Load secrets into environment
 	local SECRETS="${0##*/}.secrets"
 	[ -f "${SECRETS}" ] && source "${SECRETS}"
-}
-
-podman-compose-check(){
-	# Check whether podman compose 3rd party component is available
-	command -v podman-compose &>/dev/null && return
-	[[ "${VIRTUAL_ENV_PROMPT}" != "(podman-compose)" ]] && source "${PODMAN_COMPOSE}"
 }
 
 podman-build(){
@@ -66,9 +60,7 @@ podman-server(){
 
 podman-server-0(){
 	shift
-	podman-compose-check
-	podman-compose -f "${YAML}.yaml" up
-	podman-compose -f "${YAML}.yaml" down
+	podman compose -f "${YAML}.yaml" up
 }
 
 podman-shell(){
