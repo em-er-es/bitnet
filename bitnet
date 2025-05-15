@@ -36,10 +36,6 @@ podman-build-1(){
 	podman --root /tmp/podman/root --imagestore /tmp/podman/store build -t "${YAML}" -f "${YAML}.docker" .
 }
 
-podman-check(){
-	echo
-}
-
 podman-run(){
 	podman-run-0
 }
@@ -72,10 +68,6 @@ docker-build(){
 	docker build -t "${YAML}" -f "${YAML}.docker" .
 }
 
-docker-check(){
-	echo
-}
-
 docker-server(){
 	docker compose -f "${YAML}.yaml" up
 }
@@ -89,10 +81,6 @@ docker-shell(){
 
 build(){ #Build image
 	${VIRTUALIZATION}-build
-}
-
-check(){ #Check services connectivity
-	${VIRTUALIZATION}-check
 }
 
 run(){ #Run container with a prompt
