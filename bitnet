@@ -77,7 +77,7 @@ docker-check(){
 }
 
 docker-server(){
-	echo
+	docker compose -f "${YAML}.yaml" up
 }
 
 docker-shell(){
