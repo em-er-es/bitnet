@@ -11,6 +11,7 @@
 YAML=${YAML:-bitnet}
 PODMAN_COMPOSE="${PODMAN_COMPOSE:-${HOME}/Workspaces/podman-compose/bin/activate}"
 POD=${POD:-bitnet-local}
+[ -f "${0}.virt" ] && source "${0}.virt"
 VIRTUALIZATION=${VIRTUALIZATION:-podman}
 
 init(){
@@ -112,6 +113,11 @@ server(){ #Run container server
 
 shell(){ #Run shell inside container
 	${VIRTUALIZATION}-shell
+}
+
+virtualization(){ #Get current/Set virtualization backend [docker|podman]
+	[ $# -gt 1 ] && echo -e "export VIRTUALIZATION=${2}" > "${0}.virt" && VIRTUALIZATION="${2}" && echo "${VIRTUALIZATION}" && return
+	echo ${VIRTUALIZATION}
 }
 
 usage(){ #Show this information
