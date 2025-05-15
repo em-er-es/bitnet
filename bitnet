@@ -51,11 +51,6 @@ podman-run-1(){
 }
 
 podman-server(){
-	podman-server-0
-}
-
-podman-server-0(){
-	shift
 	podman compose -f "${YAML}.yaml" up
 }
 
